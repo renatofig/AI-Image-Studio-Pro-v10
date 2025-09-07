@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { enhancePromptApi } from '../services/geminiService';
 import { FavoritePrompt } from '../types';
@@ -9,7 +10,7 @@ interface TipsModalProps {
     onClose: () => void;
     setPrompt: (updater: React.SetStateAction<string>) => void;
     setNegativePrompt: (updater: React.SetStateAction<string>) => void;
-    t: (key: string) => string;
+    t: (key: string, ...args: any[]) => string;
     language: Language;
     favoritePrompts: FavoritePrompt[];
     setFavoritePrompts: (prompts: FavoritePrompt[]) => void;
@@ -147,11 +148,37 @@ const CloseIcon = () => (
     </svg>
 );
 
+const InputField = ({ name, label, value, onChange, placeholder }: { name: string, label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder: string }) => (
+    <div className="flex flex-col gap-1">
+        <label htmlFor={name} className="text-sm font-medium text-slate-400">{label}</label>
+        <input
+            type="text"
+            id={name}
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="bg-slate-700/50 border border-slate-600 rounded-md p-2 text-sm text-white focus:ring-2 focus:ring-banana-500 focus:outline-none"
+        />
+    </div>
+);
+
 const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePrompt, t, language, favoritePrompts, setFavoritePrompts }) => {
     const [activeTab, setActiveTab] = useState<Tab>('guide');
-    const [builderInput, setBuilderInput] = useState('');
+    
+    const [builderInputs, setBuilderInputs] = useState({
+        imageType: '',
+        mainSubject: '',
+        styleMedia: '',
+        extraDetails: ''
+    });
     const [builderOutput, setBuilderOutput] = useState('');
     const [isBuilding, setIsBuilding] = useState(false);
+
+    const handleBuilderInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setBuilderInputs(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleAddToPrompt = (text: string) => {
       setPrompt(prev => prev ? `${prev}, ${text}` : text);
@@ -162,11 +189,19 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
     };
 
     const handleGenerateBuilderPrompt = async () => {
-        if (!builderInput.trim()) return;
+        const keywords = [
+            builderInputs.imageType,
+            builderInputs.mainSubject,
+            builderInputs.styleMedia,
+            builderInputs.extraDetails
+        ].filter(Boolean).join(', ');
+
+        if (!keywords.trim()) return;
+        
         setIsBuilding(true);
         setBuilderOutput('');
         try {
-            const result = await enhancePromptApi(builderInput);
+            const result = await enhancePromptApi(keywords);
             setBuilderOutput(result);
         } catch (error) {
             setBuilderOutput(error instanceof Error ? error.message : t('errorOccurred'));
@@ -193,7 +228,7 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
     const TabButton: React.FC<{ tab: Tab, label: string }> = ({ tab, label }) => (
         <button
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors text-left ${activeTab === tab ? 'bg-banana-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab ? 'bg-indigo-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-700'}`}
         >
             {label}
         </button>
@@ -236,30 +271,29 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
             }
             case 'builder':
                 return (
-                    <div>
-                        <h3 className="text-banana-400 font-semibold mb-2">{t('promptBuilderTitle')}</h3>
-                        <p className="text-sm text-slate-400 mb-4">{t('promptBuilderDesc')}</p>
-                        <textarea
-                            value={builderInput}
-                            onChange={(e) => setBuilderInput(e.target.value)}
-                            rows={3}
-                            placeholder={t('promptBuilderPlaceholder')}
-                            className="w-full bg-slate-800 border-slate-700 rounded-md p-2 text-sm mb-2"
-                        />
+                    <div className="flex flex-col h-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <InputField name="imageType" label={t('imageType')} placeholder={t('imageTypePlaceholder')} value={builderInputs.imageType} onChange={handleBuilderInputChange} />
+                            <InputField name="mainSubject" label={t('mainSubject')} placeholder={t('mainSubjectPlaceholder')} value={builderInputs.mainSubject} onChange={handleBuilderInputChange} />
+                            <InputField name="styleMedia" label={t('styleMedia')} placeholder={t('styleMediaPlaceholder')} value={builderInputs.styleMedia} onChange={handleBuilderInputChange} />
+                            <InputField name="extraDetails" label={t('extraDetails')} placeholder={t('extraDetailsPlaceholder')} value={builderInputs.extraDetails} onChange={handleBuilderInputChange} />
+                        </div>
+            
                         <button
                             onClick={handleGenerateBuilderPrompt}
                             disabled={isBuilding}
-                            className="w-full flex justify-center items-center gap-2 bg-banana-500 text-slate-900 font-bold py-2 rounded-md disabled:opacity-50"
+                            className="w-full flex justify-center items-center gap-2 bg-indigo-600 text-white font-bold py-3 rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-colors"
                         >
-                            {isBuilding ? <LoadingSpinner /> : <SparklesIcon className="text-blue-600" />}
-                            {t('generatePrompt')}
+                            {isBuilding ? <LoadingSpinner /> : <SparklesIcon className="text-white" />}
+                            <span>{isBuilding ? t('generatingPrompt') : t('generatePromptIdea')}</span>
                         </button>
+                        
                         {builderOutput && (
-                            <div className="mt-4 p-3 bg-slate-800 rounded-md text-sm">
-                                <p className="whitespace-pre-wrap">{builderOutput}</p>
+                            <div className="mt-4 p-3 bg-slate-900 rounded-md text-sm flex-grow flex flex-col">
+                                <p className="whitespace-pre-wrap flex-grow">{builderOutput}</p>
                                 <button
                                     onClick={() => { setPrompt(builderOutput); onClose(); }}
-                                    className="mt-2 text-xs bg-slate-700 px-2 py-1 rounded hover:bg-slate-600"
+                                    className="mt-2 text-sm bg-slate-700 px-3 py-1.5 rounded hover:bg-slate-600 self-start"
                                 >
                                     {t('useThisPrompt')}
                                 </button>
@@ -327,24 +361,27 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-3xl h-[80vh] text-slate-200 flex flex-col" onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 border-b border-slate-700">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-5xl h-[85vh] text-slate-200 flex flex-col" onClick={e => e.stopPropagation()}>
+                <header className="flex justify-between items-center p-4 border-b border-slate-700 flex-shrink-0">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                        <SparklesIcon className="text-banana-400"/>
-                        {t('promptHelperTitle')}
+                        <span>{t('promptHelperTitle')}</span>
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white">
-                        <CloseIcon />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button onClick={onClose} className="text-slate-400 hover:text-white">
+                            <CloseIcon />
+                        </button>
+                    </div>
                 </header>
-                <div className="flex-grow flex p-4 gap-4 overflow-hidden">
-                    <nav className="flex flex-col gap-2 w-48 flex-shrink-0">
-                        <TabButton tab="guide" label={t('guide')} />
-                        <TabButton tab="builder" label={t('builder')} />
-                        <TabButton tab="editGuide" label={t('editGuide')} />
-                        <TabButton tab="styles" label={t('stylesKeywords')} />
-                        <TabButton tab="negative" label={t('negative')} />
-                        <TabButton tab="favorites" label={t('favorites')} />
+                <div className="flex-grow flex flex-col p-4 gap-4 overflow-hidden">
+                    <nav className="flex-shrink-0 border-b border-slate-700 pb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <TabButton tab="guide" label={t('guide')} />
+                            <TabButton tab="editGuide" label={t('editGuide')} />
+                            <TabButton tab="builder" label={t('builder')} />
+                            <TabButton tab="styles" label={t('stylesKeywords')} />
+                            <TabButton tab="negative" label={t('negative')} />
+                            <TabButton tab="favorites" label={t('favorites')} />
+                        </div>
                     </nav>
                     <main className="flex-grow bg-slate-800/50 rounded-md p-4 overflow-y-auto">
                         {renderContent()}

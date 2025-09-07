@@ -501,7 +501,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   const showTextOverlay = mode === AppMode.EDIT && editFunction === EditFunction.TEXT_OVERLAY && textOverlay.text && currentImage;
   const showCropBox = mode === AppMode.EDIT && editFunction === EditFunction.CROP && currentImage;
   const showMaskingCanvas = mode === AppMode.EDIT && editFunction === EditFunction.ADD_REMOVE && currentImage && isMaskingActive;
-  const canZoomPan = hasResult && !generatedVideoUrl && !showComparator;
+  const canZoomPan = hasResult && !generatedVideoUrl && !showComparator && !isMaskingActive;
 
   const isTransformed = canZoomPan && (transform.scale !== 1 || transform.x !== initialImageMetrics.initialX || transform.y !== initialImageMetrics.initialY);
 
