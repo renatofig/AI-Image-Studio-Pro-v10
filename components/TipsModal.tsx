@@ -3,7 +3,7 @@ import { enhancePromptApi } from '../services/geminiService';
 import { FavoritePrompt } from '../types';
 
 type Language = 'pt' | 'en';
-type Tab = 'guide' | 'builder' | 'styles' | 'negative' | 'favorites';
+type Tab = 'guide' | 'builder' | 'editGuide' | 'styles' | 'negative' | 'favorites';
 
 interface TipsModalProps {
     onClose: () => void;
@@ -52,6 +52,53 @@ const tipsContent = {
         explanation: "This prompt clearly defines the subject, setting, style, and specific details, leading to a powerful and precise image."
       }
     }
+};
+
+const editGuideContent = {
+    pt: [
+        {
+            title: "1. Adicionar e Remover Elementos",
+            model: "Usando a imagem fornecida de [assunto], por favor [adicione/remova/modifique] [elemento] para/da cena. Garanta que a mudança seja [descrição de como a mudança deve se integrar].",
+            example: "Usando a imagem fornecida do meu gato, por favor, adicione um pequeno chapéu de mago de tricô em sua cabeça. Faça com que pareça que está confortavelmente sentado e que combine com a iluminação suave da foto."
+        },
+        {
+            title: "2. Retoque (Mascaramento Semântico)",
+            model: "Usando a imagem fornecida, mude apenas o [elemento específico] para [novo elemento/descrição]. Mantenha todo o resto da imagem exatamente igual, preservando o estilo, iluminação e composição originais.",
+            example: "Usando a imagem fornecida de uma sala de estar, mude apenas o sofá azul para um sofá chesterfield de couro marrom vintage. Mantenha o resto da sala, incluindo as almofadas no sofá e a iluminação, inalterados."
+        },
+        {
+            title: "3. Transferência de Estilo",
+            model: "Usando a imagem fornecida, mude seu estilo para [descrição do novo estilo]. Mantenha o conteúdo e a composição da imagem original.",
+            example: "Usando a imagem fornecida de uma paisagem urbana, mude seu estilo para uma pintura a óleo de Van Gogh. Mantenha os edifícios e a rua reconhecíveis."
+        },
+        {
+            title: "4. Composição de Imagem",
+            model: "Usando a imagem A e a imagem B, [descreva como compor/mesclar/misturar].",
+            example: "Usando a imagem de um astronauta e a imagem da lua, coloque o astronauta na superfície da lua. Faça com que a iluminação no astronauta corresponda à iluminação da lua."
+        }
+    ],
+    en: [
+        {
+            title: "1. Add and Remove Elements",
+            model: "Using the provided image of [subject], please [add/remove/modify] [element] to/from the scene. Ensure the change is [description of how the change should integrate].",
+            example: "Using the provided image of my cat, please add a small knitted wizard hat on its head. Make it look like it's sitting comfortably and matches the soft lighting of the photo."
+        },
+        {
+            title: "2. Retouch (Semantic Masking)",
+            model: "Using the provided image, change only the [specific element] to [new element/description]. Keep everything else in the image exactly the same, preserving the original style, lighting, and composition.",
+            example: "Using the provided image of a living room, change only the blue sofa to a vintage brown leather chesterfield sofa. Keep the rest of the room, including the pillows on the sofa and the lighting, unchanged."
+        },
+        {
+            title: "3. Style Transfer",
+            model: "Using the provided image, change its style to [description of new style]. Maintain the original image's content and composition.",
+            example: "Using the provided image of a city landscape, change its style to a Van Gogh oil painting. Keep the buildings and street recognizable."
+        },
+        {
+            title: "4. Image Composition",
+            model: "Using image A and image B, [describe how to compose/merge/blend them].",
+            example: "Using the image of an astronaut and the image of the moon, place the astronaut on the moon's surface. Make the lighting on the astronaut match the lighting from the moon."
+        }
+    ]
 };
 
 const styleKeywords = [
@@ -146,15 +193,15 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
     const TabButton: React.FC<{ tab: Tab, label: string }> = ({ tab, label }) => (
         <button
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab ? 'bg-banana-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors text-left ${activeTab === tab ? 'bg-banana-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
         >
             {label}
         </button>
     );
 
     const renderContent = () => {
-        const guideData = tipsContent[language];
-        const negativeData = negativePrompts[language];
+        const guideData = tipsContent[language] || tipsContent.pt;
+        const negativeData = negativePrompts[language] || negativePrompts.pt;
 
         switch (activeTab) {
             case 'guide':
@@ -164,13 +211,29 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
                         <p>{guideData.intro}</p>
                         <h4 className="text-slate-200">{guideData.structure.title}</h4>
                         <ul>
-                            {guideData.structure.points.map((point, index) => <li key={index}>{point}</li>)}
+                            {guideData.structure.points.map((point, index) => <li key={`guide-point-${index}`}>{point}</li>)}
                         </ul>
                         <h4 className="text-slate-200">{guideData.example.title}</h4>
                         <p><code>{guideData.example.prompt}</code></p>
                         <p>{guideData.example.explanation}</p>
                     </div>
                 );
+            case 'editGuide': {
+                const editData = editGuideContent[language] || editGuideContent.pt;
+                return (
+                    <div className="space-y-6">
+                        {editData.map((item, index) => (
+                            <div key={`edit-guide-${index}`} className="prose prose-invert prose-sm max-w-none text-slate-300">
+                                <h4 className="text-banana-400 font-bold not-prose">{item.title}</h4>
+                                <h5 className="text-slate-200 font-semibold mt-2 not-prose">Modelo:</h5>
+                                <p className="bg-slate-900 p-2 rounded-md font-mono text-xs"><code>{item.model}</code></p>
+                                <h5 className="text-slate-200 font-semibold mt-2 not-prose">Exemplo:</h5>
+                                <p className="italic">{item.example}</p>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
             case 'builder':
                 return (
                     <div>
@@ -208,12 +271,12 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
                 return (
                     <div>
                         {styleKeywords.map(section => (
-                            <div key={section.category[language]} className="mb-4">
-                                <h4 className="text-banana-400 font-semibold text-sm mb-2">{section.category[language]}</h4>
+                            <div key={section.category.en} className="mb-4">
+                                <h4 className="text-banana-400 font-semibold text-sm mb-2">{section.category[language] || section.category.pt}</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {section.keywords.map(kw => (
                                         <button key={kw.en} onClick={() => handleAddToPrompt(kw.en)} className="bg-slate-700 text-xs px-2 py-1 rounded-md hover:bg-slate-600">
-                                            {kw[language]}
+                                            {kw[language] || kw.pt}
                                         </button>
                                     ))}
                                 </div>
@@ -229,7 +292,7 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
                         <div className="flex flex-wrap gap-2 mt-4">
                             {negativeData.keywords.map(kw => (
                                 <button key={kw.en} onClick={() => handleAddToNegativePrompt(kw.en)} className="bg-slate-700 text-xs px-2 py-1 rounded-md hover:bg-slate-600 not-prose">
-                                    {kw[language]}
+                                    {kw[language] || kw.pt}
                                 </button>
                             ))}
                         </div>
@@ -275,9 +338,10 @@ const TipsModal: React.FC<TipsModalProps> = ({ onClose, setPrompt, setNegativePr
                     </button>
                 </header>
                 <div className="flex-grow flex p-4 gap-4 overflow-hidden">
-                    <nav className="flex flex-col gap-2 w-40 flex-shrink-0">
+                    <nav className="flex flex-col gap-2 w-48 flex-shrink-0">
                         <TabButton tab="guide" label={t('guide')} />
                         <TabButton tab="builder" label={t('builder')} />
+                        <TabButton tab="editGuide" label={t('editGuide')} />
                         <TabButton tab="styles" label={t('stylesKeywords')} />
                         <TabButton tab="negative" label={t('negative')} />
                         <TabButton tab="favorites" label={t('favorites')} />

@@ -1,12 +1,11 @@
-import React, { useMemo, useState, useEffect, lazy, Suspense } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { AppMode, CreateFunction, EditFunction, ImageFile, AspectRatio, ImageFilter, RenderInputType } from '../types';
 import { AppState, MaskState, FavoritePrompt } from '../types';
 import FunctionCard from './FunctionCard';
 import UploadArea from './UploadArea';
 import { enhancePromptApi, translatePromptApi } from '../services/geminiService';
-
-const PromptEditorModal = lazy(() => import('./PromptEditorModal'));
-const TipsModal = lazy(() => import('./TipsModal'));
+import PromptEditorModal from './PromptEditorModal';
+import TipsModal from './TipsModal';
 
 type Language = 'pt' | 'en';
 
@@ -368,25 +367,23 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   
   return (
     <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 space-y-6">
-      <Suspense fallback={null}>
-        {editingPrompt && <PromptEditorModal
-            isOpen={!!editingPrompt}
-            onClose={handleClosePromptEditor}
-            onSave={handleSavePrompt}
-            initialValue={editingPrompt === 'positive' ? prompt : negativePrompt}
-            title={editingPrompt === 'positive' ? t('promptEditorTitle') : t('negativePromptEditorTitle')}
+      {editingPrompt && <PromptEditorModal
+          isOpen={!!editingPrompt}
+          onClose={handleClosePromptEditor}
+          onSave={handleSavePrompt}
+          initialValue={editingPrompt === 'positive' ? prompt : negativePrompt}
+          title={editingPrompt === 'positive' ? t('promptEditorTitle') : t('negativePromptEditorTitle')}
+          t={t}
+      />}
+      {isTipsModalOpen && <TipsModal 
+            onClose={() => setIsTipsModalOpen(false)} 
+            setPrompt={setPrompt} 
+            setNegativePrompt={setNegativePrompt} 
             t={t}
+            language={language}
+            favoritePrompts={favoritePrompts}
+            setFavoritePrompts={setFavoritePrompts}
         />}
-        {isTipsModalOpen && <TipsModal 
-              onClose={() => setIsTipsModalOpen(false)} 
-              setPrompt={setPrompt} 
-              setNegativePrompt={setNegativePrompt} 
-              t={t}
-              language={language}
-              favoritePrompts={favoritePrompts}
-              setFavoritePrompts={setFavoritePrompts}
-          />}
-      </Suspense>
       <header className="flex justify-between items-start gap-3">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
