@@ -8,6 +8,7 @@ import { generateImageApi, generateVideoApi } from './services/geminiService';
 import * as geminiService from './services/geminiService';
 import { dbService } from './services/dbService';
 import ApiKeyModal from './components/ApiKeyModal';
+import HelpModal from './components/HelpModal';
 
 type Language = 'pt' | 'en';
 
@@ -51,6 +52,7 @@ const translations = {
     // LeftPanel
     panelSubtitle: 'Gerador profissional de imagens e vídeos',
     toggleLanguageTooltip: 'Alterar Idioma',
+    helpTooltip: 'Ajuda',
     compareTooltip: 'Ativar/Desativar comparador antes/depois',
     undoTooltip: 'Desfazer (Ctrl+Z)',
     redoTooltip: 'Refazer (Ctrl+Y)',
@@ -248,6 +250,48 @@ const translations = {
     renderActionExtrude: 'Crie uma renderização 3D fotorrealista a partir desta planta baixa. Use uma perspectiva de nível de olho, adicione móveis modernos e elegantes apropriados para cada cômodo. Implemente iluminação natural suave vinda de janelas grandes, com sombras realistas. Use materiais de alta qualidade.',
     actionRenderModel: "Renderize este modelo 3D básico com materiais fotorrealistas e de alta qualidade. Implemente iluminação avançada baseada em física, incluindo sombras suaves, reflexos e oclusão de ambiente para criar uma imagem final fotorrealista. Preste atenção aos detalhes descritos no prompt do usuário para texturas e ambiente.",
     renderActionRenderSketch: "Transforme este esboço em uma imagem fotorrealista. Adicione materiais, texturas, iluminação e sombras realistas com base no prompt de texto do usuário para dar vida à cena. Mantenha a composição e a perspectiva do esboço original.",
+    // Help Modal
+    helpTitle: 'Ajuda e Guia do Usuário',
+    helpIntro: 'Bem-vindo ao AI Image Studio Pro! Este guia irá ajudá-lo a entender todas as ferramentas poderosas à sua disposição.',
+    helpCreateTitle: '🎨 Modo Criar',
+    helpCreateIntro: 'Este modo é para gerar imagens a partir do zero usando apenas descrições de texto (prompts).',
+    helpCreatePromptingTitle: 'Escrevendo Prompts',
+    helpCreatePromptingContent: "O coração deste modo. Descreva o que você quer ver. Seja específico! Use as ferramentas 'Melhorar' (✨) para adicionar detalhes automaticamente ou 'Traduzir' (🌍) para alternar entre inglês e português, já que modelos de IA geralmente entendem melhor o inglês.",
+    helpCreatePresetsTitle: 'Predefinições de Estilo',
+    helpCreatePresetsContent: 'Aplique rapidamente estilos de arte complexos como Fotográfico, Anime, Fantasia, etc., ao seu prompt com um único clique.',
+    helpCreateTypesTitle: 'Tipos de Criação',
+    helpCreateTypesContent: 'Use modelos de prompt especializados para criar Adesivos, Logos, Quadrinhos, Esboços ou Padrões contínuos (seamless).',
+    helpEditTitle: '🛠️ Modo Editar',
+    helpEditIntro: 'Use este modo para modificar uma imagem existente usando IA. Faça o upload de uma imagem para começar.',
+    helpEditFunctionsTitle: 'Funções de Edição com IA',
+    helpEditFunctionsContent: "Adicionar/Remover: Modifique partes de uma imagem. Você pode usar uma máscara para dizer à IA exatamente onde fazer a alteração. \nRetoque: Para melhorias sutis como iluminação ou correção de pequenas falhas. \nEstilo: Transforma o estilo artístico da sua imagem completamente. \nUnir: Combina duas imagens em uma única composição.",
+    helpEditMaskingTitle: 'Ferramentas de Máscara',
+    helpEditMaskingContent: "Ao usar 'Adicionar/Remover', ative a máscara para pintar (em branco) as áreas que a IA deve alterar. Isso dá a você controle preciso sobre a edição.",
+    helpEditClientToolsTitle: 'Ferramentas Locais (Sem IA)',
+    helpEditClientToolsContent: 'Adicionar Texto, Cortar, aplicar Filtros e Girar são edições rápidas feitas diretamente no seu navegador, sem usar a API.',
+    helpRenderTitle: '🏗️ Modo Renderizar',
+    helpRenderIntro: 'Uma suíte profissional para arquitetos e designers. Transforme esboços, modelos 3D básicos ou plantas baixas 2D em renders fotorrealistas.',
+    helpRenderInputTitle: 'Tipos de Input',
+    helpRenderInputContent: "Escolha se sua imagem base é um Esboço, um Modelo 3D ou uma Planta Baixa. A IA interpretará cada um de forma diferente para criar o melhor resultado.",
+    helpRenderFidelityTitle: 'Balanço de Controle (Fidelidade vs. Criatividade)',
+    helpRenderFidelityContent: 'Este slider controla o quão estritamente a IA deve seguir sua imagem base. Fidelidade alta mantém a estrutura original, enquanto criatividade baixa permite que a IA faça mais reinterpretações.',
+    helpRenderPresetsTitle: 'Presets de Renderização',
+    helpRenderPresetsContent: 'Adicione rapidamente prompts complexos para materiais (madeira, mármore), iluminação (luz do dia, noturno) e ações de renderização com um clique.',
+    helpVideoTitle: '🎬 Modo Vídeo',
+    helpVideoIntro: 'Crie pequenas animações a partir de uma imagem, texto ou uma combinação de ambos.',
+    helpVideoImageTitle: 'Animação a partir de Imagem',
+    helpVideoImageContent: 'Faça o upload de uma imagem inicial e descreva no prompt o movimento que você deseja. Ex: "um close-up dramático, a câmera se afasta lentamente".',
+    helpVideoTextTitle: 'Animação a partir de Texto',
+    helpVideoTextContent: 'Se nenhuma imagem for fornecida, a IA criará um vídeo inteiramente a partir da sua descrição de texto.',
+    helpWorkflowTitle: '✨ Ferramentas de Fluxo de Trabalho',
+    helpWorkflowGalleryTitle: 'Galeria',
+    helpWorkflowGalleryContent: 'Salve suas criações favoritas na galeria. Você pode pesquisar, filtrar e reutilizar qualquer imagem salva como base para uma nova edição ou vídeo.',
+    helpWorkflowHistoryTitle: 'Histórico e Desfazer/Refazer',
+    helpWorkflowHistoryContent: 'Cada ação que você executa é salva no histórico da sessão. Use os botões de desfazer/refazer ou o painel de histórico visual para voltar a qualquer etapa anterior.',
+    helpWorkflowComparatorTitle: 'Comparador Antes/Depois',
+    helpWorkflowComparatorContent: 'Após uma edição, use o botão do comparador para ver um slider interativo mostrando a imagem original e a editada lado a lado.',
+    helpWorkflowExportTitle: 'Exportação',
+    helpWorkflowExportContent: 'Faça o download de suas imagens finais com opções para mudar o formato (PNG/JPEG), qualidade e até fazer um upscale da resolução para até 4x o tamanho original.',
   },
   en: {
     // App/General
@@ -288,6 +332,7 @@ const translations = {
     // LeftPanel
     panelSubtitle: 'Professional image and video generator',
     toggleLanguageTooltip: 'Toggle Language',
+    helpTooltip: 'Help',
     compareTooltip: 'Toggle before/after comparator',
     undoTooltip: 'Undo (Ctrl+Z)',
     redoTooltip: 'Redo (Ctrl+Y)',
@@ -485,6 +530,48 @@ const translations = {
     renderActionExtrude: 'Create a photorealistic 3D rendering from this floor plan. Use an eye-level perspective, add modern and elegant furniture appropriate for each room. Implement soft natural lighting from large windows, with realistic shadows. Use high-quality materials.',
     actionRenderModel: "Render this basic 3D model with photorealistic, high-quality materials. Implement advanced physics-based lighting, including soft shadows, reflections, and ambient occlusion to create a photorealistic final image. Pay attention to the details described in the user's prompt for textures and environment.",
     renderActionRenderSketch: "Transform this sketch into a photorealistic image. Add realistic materials, textures, lighting, and shadows based on the user's text prompt to bring the scene to life. Maintain the composition and perspective of the original sketch.",
+    // Help Modal
+    helpTitle: 'Help & User Guide',
+    helpIntro: 'Welcome to AI Image Studio Pro! This guide will help you understand all the powerful tools at your disposal.',
+    helpCreateTitle: '🎨 Create Mode',
+    helpCreateIntro: 'This mode is for generating images from scratch using only text descriptions (prompts).',
+    helpCreatePromptingTitle: 'Writing Prompts',
+    helpCreatePromptingContent: "The heart of this mode. Describe what you want to see. Be specific! Use the \'Enhance\' (✨) tool to automatically add detail or \'Translate\' (🌍) to switch between English and Portuguese, as AI models often understand English better.",
+    helpCreatePresetsTitle: 'Style Presets',
+    helpCreatePresetsContent: 'Quickly apply complex art styles like Photographic, Anime, Fantasy, etc., to your prompt with a single click.',
+    helpCreateTypesTitle: 'Creation Types',
+    helpCreateTypesContent: 'Use specialized prompt templates to create Stickers, Logos, Comics, Sketches, or seamlessly tileable Patterns.',
+    helpEditTitle: '🛠️ Edit Mode',
+    helpEditIntro: 'Use this mode to modify an existing image using AI. Upload an image to get started.',
+    helpEditFunctionsTitle: 'AI Editing Functions',
+    helpEditFunctionsContent: "Add/Remove: Modify parts of an image. You can use a mask to tell the AI exactly where to make the change. \nRetouch: For subtle improvements like lighting or fixing minor blemishes. \nStyle: Completely transforms the artistic style of your image. \nCompose: Combines two images into a single new composition.",
+    helpEditMaskingTitle: 'Masking Tools',
+    helpEditMaskingContent: "When using 'Add/Remove', activate the mask to paint (in white) the areas the AI should change. This gives you precise control over the edit.",
+    helpEditClientToolsTitle: 'Local Tools (No AI)',
+    helpEditClientToolsContent: 'Add Text, Crop, applying Filters, and Rotate are quick edits done directly in your browser, without using the API.',
+    helpRenderTitle: '🏗️ Render Mode',
+    helpRenderIntro: 'A professional suite for architects and designers. Turn sketches, basic 3D models, or 2D floor plans into photorealistic renders.',
+    helpRenderInputTitle: 'Input Types',
+    helpRenderInputContent: "Choose whether your base image is a Sketch, 3D Model, or Floor Plan. The AI will interpret each differently to create the best result.",
+    helpRenderFidelityTitle: 'Control Balance (Fidelity vs. Creativity)',
+    helpRenderFidelityContent: 'This slider controls how strictly the AI must follow your base image. High fidelity maintains the original structure, while low creativity allows the AI to make more reinterpretations.',
+    helpRenderPresetsTitle: 'Render Presets',
+    helpRenderPresetsContent: 'Quickly add complex prompts for materials (wood, marble), lighting (daylight, night), and rendering actions with one click.',
+    helpVideoTitle: '🎬 Video Mode',
+    helpVideoIntro: 'Create short animations from an image, text, or a combination of both.',
+    helpVideoImageTitle: 'Animation from Image',
+    helpVideoImageContent: 'Upload a starting image and describe the desired movement in the prompt. E.g., "a dramatic close-up, the camera slowly pans out".',
+    helpVideoTextTitle: 'Animation from Text',
+    helpVideoTextContent: 'If no image is provided, the AI will create a video entirely from your text description.',
+    helpWorkflowTitle: '✨ Workflow Tools',
+    helpWorkflowGalleryTitle: 'Gallery',
+    helpWorkflowGalleryContent: 'Save your favorite creations to the gallery. You can search, filter, and reuse any saved image as a base for a new edit or video.',
+    helpWorkflowHistoryTitle: 'History & Undo/Redo',
+    helpWorkflowHistoryContent: 'Every action you take is saved in the session history. Use the undo/redo buttons or the visual history panel to jump back to any previous step.',
+    helpWorkflowComparatorTitle: 'Before/After Comparator',
+    helpWorkflowComparatorContent: 'After an edit, use the comparator button to see an interactive slider showing the original and edited image side-by-side.',
+    helpWorkflowExportTitle: 'Exporting',
+    helpWorkflowExportContent: 'Download your final images with options to change the format (PNG/JPEG), quality, and even upscale the resolution to 4x the original size.',
   }
 };
 
@@ -672,6 +759,7 @@ const App: React.FC = () => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [gallerySearchQuery, setGallerySearchQuery] = useState('');
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [lastDeletedGallery, setLastDeletedGallery] = useState<GalleryImage[] | null>(null);
   const undoDeleteTimeoutRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -1640,6 +1728,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950/50">
        <ApiKeyModal isOpen={isApiKeyModalOpen} onSubmit={handleApiKeySubmit} t={t} />
+       <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} t={t} />
        {appState.ui.isHistoryPanelOpen && <HistoryPanel history={history} historyIndex={historyIndex} onJump={handleJumpToHistory} onClose={() => setAppState(s => ({ ...s, ui: { ...s.ui, isHistoryPanelOpen: false }}))} t={t} />}
       <GalleryModal
         isOpen={isGalleryModalOpen}
@@ -1682,6 +1771,7 @@ const App: React.FC = () => {
             language={language}
             setLanguage={setLanguage}
             setIsApiKeyModalOpen={setIsApiKeyModalOpen}
+            setIsHelpModalOpen={setIsHelpModalOpen}
             isDraggingFromGallery={isDraggingFromGallery}
             setToast={setToast}
             handleSetImage={handleSetImage}

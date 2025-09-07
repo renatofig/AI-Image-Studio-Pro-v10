@@ -34,6 +34,7 @@ interface LeftPanelProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   setIsApiKeyModalOpen: (isOpen: boolean) => void;
+  setIsHelpModalOpen: (isOpen: boolean) => void;
   isDraggingFromGallery: boolean;
   setToast: (toast: { message: string; type: 'success' | 'info' } | null) => void;
   handleSetImage: (slot: 'image1' | 'image2' | 'customWatermark', file: ImageFile | null) => void;
@@ -61,6 +62,14 @@ const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
       <line x1="12" y1="8" x2="12.01" y2="8"></line>
     </svg>
   );
+  
+const HelpIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+);
 
 const ExpandIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -152,7 +161,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   appState, setAppState, onModeChange,
   isLoading, onGenerate, onGenerateVideo, onStop, onApplyText, onApplyCrop, onApplyFilter, onApplyRotation, onInvertMask, hasGeneratedImage,
   onNewImage, onUndo, onRedo, canUndo, canRedo, onToggleComparator,
-  t, language, setLanguage, setIsApiKeyModalOpen,
+  t, language, setLanguage, setIsApiKeyModalOpen, setIsHelpModalOpen,
   isDraggingFromGallery, setToast, handleSetImage,
 }) => {
   
@@ -389,6 +398,9 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           <p className="text-slate-400 mt-1">{t('panelSubtitle')}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+            <button onClick={() => setIsHelpModalOpen(true)} className="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold p-2 rounded-lg transition-colors" title={t('helpTooltip')} aria-label={t('helpTooltip')}>
+                <HelpIcon />
+            </button>
             <button onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')} className="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-3 rounded-lg transition-colors text-sm w-12" title={t('toggleLanguageTooltip')} aria-label={t('toggleLanguageTooltip')}>
                 {language.toUpperCase()}
             </button>
