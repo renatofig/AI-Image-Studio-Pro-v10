@@ -61,9 +61,8 @@ const Gallery: React.FC<GalleryProps> = ({ images, onUseAsBase, onCreateVideo, o
 
   const handleDeleteClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (window.confirm(t('confirmDeleteImage'))) {
-      onDelete(id);
-    }
+    // No confirmation for single delete, user can undo.
+    onDelete(id);
   };
 
   const handleDragStart = (e: React.DragEvent, src: string) => {

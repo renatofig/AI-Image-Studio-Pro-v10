@@ -18,6 +18,7 @@ const translations = {
     loadingSession: 'Carregando sessão...',
     galleryCleaned: 'Galeria limpa.',
     imagesRemoved: 'imagens removidas',
+    imageRemoved: 'Imagem removida.',
     undo: 'Desfazer',
     imageSaved: 'Imagem salva na galeria!',
     imagesSaved: (count: number) => `${count} imagens foram salvas na galeria!`,
@@ -304,6 +305,7 @@ const translations = {
     loadingSession: 'Loading session...',
     galleryCleaned: 'Gallery cleared.',
     imagesRemoved: 'images removed',
+    imageRemoved: 'Image removed.',
     undo: 'Undo',
     imageSaved: 'Image saved to gallery!',
     imagesSaved: (count: number) => `${count} images saved to gallery!`,
@@ -772,7 +774,7 @@ const App: React.FC = () => {
   const [gallerySearchQuery, setGallerySearchQuery] = useState('');
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
-  const [lastDeletedGallery, setLastDeletedGallery] = useState<GalleryImage[] | null>(null);
+  const [lastDeletedImages, setLastDeletedImages] = useState<GalleryImage[] | null>(null);
   const undoDeleteTimeoutRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
@@ -1594,36 +1596,48 @@ const App: React.FC = () => {
     if (galleryImages.length === 0) return;
 
     if (window.confirm(t('confirmDeleteAllImages', galleryImages.length))) {
-        setLastDeletedGallery([...galleryImages]);
-        await dbService.clearImages();
-        setGalleryImages([]);
-
         if (undoDeleteTimeoutRef.current) {
             clearTimeout(undoDeleteTimeoutRef.current);
         }
+        setLastDeletedImages([...galleryImages]);
+        await dbService.clearImages();
+        setGalleryImages([]);
+
         undoDeleteTimeoutRef.current = window.setTimeout(() => {
-            setLastDeletedGallery(null);
+            setLastDeletedImages(null);
         }, 7000); // 7 seconds to undo
     }
   }, [galleryImages, t]);
 
-  const handleUndoDeleteAll = useCallback(async () => {
-      if (!lastDeletedGallery) return;
+  const handleUndoDelete = useCallback(async () => {
+      if (!lastDeletedImages) return;
 
-      const restorePromises = lastDeletedGallery.map(img => dbService.addImage(img));
+      const restorePromises = lastDeletedImages.map(img => dbService.addImage(img));
       await Promise.all(restorePromises);
       
-      setGalleryImages(lastDeletedGallery);
-      setLastDeletedGallery(null);
+      setGalleryImages(prevImages => [...prevImages, ...lastDeletedImages].sort((a,b) => b.createdAt - a.createdAt));
+      setLastDeletedImages(null);
       if (undoDeleteTimeoutRef.current) {
           clearTimeout(undoDeleteTimeoutRef.current);
           undoDeleteTimeoutRef.current = null;
       }
-  }, [lastDeletedGallery]);
+  }, [lastDeletedImages]);
 
   const handleDeleteFromGallery = async (id: string) => {
+    const imageToDelete = galleryImages.find(img => img.id === id);
+    if (!imageToDelete) return;
+
+    if (undoDeleteTimeoutRef.current) {
+        clearTimeout(undoDeleteTimeoutRef.current);
+    }
+    
+    setLastDeletedImages([imageToDelete]);
     await dbService.deleteImage(id);
     setGalleryImages(prevImages => prevImages.filter(image => image.id !== id));
+
+    undoDeleteTimeoutRef.current = window.setTimeout(() => {
+        setLastDeletedImages(null);
+    }, 7000);
   };
 
   const handleToggleFavorite = useCallback(async (id: string) => {
@@ -1831,11 +1845,15 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {lastDeletedGallery && (
+      {lastDeletedImages && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-slate-200 py-3 px-5 rounded-lg shadow-lg flex items-center gap-4 animate-fade-in z-50">
-            <p>{t('galleryCleaned')} ({lastDeletedGallery.length} {t('imagesRemoved')})</p>
+            <p>
+              {lastDeletedImages.length === 1
+                ? t('imageRemoved')
+                : `${t('galleryCleaned')} (${lastDeletedImages.length} ${t('imagesRemoved')})`}
+            </p>
             <button
-                onClick={handleUndoDeleteAll}
+                onClick={handleUndoDelete}
                 className="font-bold text-banana-400 hover:text-banana-300 transition-colors"
             >
                 {t('undo')}
