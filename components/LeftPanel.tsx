@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 import { AppMode, CreateFunction, EditFunction, ImageFile, AspectRatio, ImageFilter, RenderInputType } from '../types';
 import { AppState, MaskState, FavoritePrompt } from '../types';
@@ -38,6 +39,12 @@ interface LeftPanelProps {
   setToast: (toast: { message: string; type: 'success' | 'info' } | null) => void;
   handleSetImage: (slot: 'image1' | 'image2' | 'customWatermark', file: ImageFile | null) => void;
 }
+
+const SpeechBubbleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+);
 
 const SparklesIcon = ({ className }: { className?: string }) => (
     <svg 
@@ -458,16 +465,17 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       {!isClientSideEdit && (
         <div className={`grid grid-cols-1 ${isNegativePromptVisible ? 'md:grid-cols-2' : ''} gap-4`}>
           <div className="prompt-section">
-            <div className="flex justify-between items-center mb-2">
-                <label htmlFor="prompt" className="font-semibold text-slate-300">
-                  {mode === AppMode.VIDEO ? t('describeAnimation') : t('describeIdea')}
-                </label>
-                <div className="flex items-center space-x-3">
-                    <button onClick={() => setIsTipsModalOpen(true)} className="text-slate-400 hover:text-banana-400 flex items-center gap-1 text-sm transition-colors">
-                        <InfoIcon className="h-4 w-4" />
-                        <span>{t('tips')}</span>
-                    </button>
+            <div className="flex items-center mb-2 gap-4">
+                <div className="flex items-center gap-2">
+                    <SpeechBubbleIcon className="text-slate-400" />
+                    <label htmlFor="prompt" className="font-semibold text-slate-300 cursor-pointer">
+                        {mode === AppMode.VIDEO ? t('describeAnimation') : t('describeIdea')}
+                    </label>
                 </div>
+                <button onClick={() => setIsTipsModalOpen(true)} className="text-slate-400 hover:text-banana-400 flex items-center gap-1 text-sm transition-colors">
+                    <InfoIcon className="h-4 w-4" />
+                    <span>{t('tipsAndFavorites')}</span>
+                </button>
             </div>
             <div className="relative">
               <textarea

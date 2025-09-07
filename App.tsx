@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppMode, CreateFunction, EditFunction, ImageFile, AspectRatio, ImageFilter, GalleryImage, RenderInputType, AppState } from './types';
 import LeftPanel from './components/LeftPanel';
 // FIX: Changed import to a named import as RightPanel is not a default export.
@@ -63,7 +62,7 @@ const translations = {
     resetTooltip: 'Reiniciar e começar um novo projeto',
     stop: 'Parar',
     describeAnimation: '🎬 Descreva a animação',
-    describeIdea: '💭 Descreva sua ideia',
+    describeIdea: 'Descreva sua ideia',
     promptPlaceholderVideo: 'Ex: um close-up dramático, a câmera se afasta lentamente...',
     promptPlaceholderImage: 'Descreva a imagem que você deseja criar ou a edição que quer fazer...',
     enhancePrompt: 'Melhorar prompt com IA',
@@ -181,7 +180,7 @@ const translations = {
     format: 'Formato',
     quality: 'Qualidade',
     resolution: 'Upscale',
-    includeOriginal: 'Incluir imagem original (antes das edições)',
+    includeOriginal: 'Incluir imagem original (antes das edi��ões)',
     downloading: 'Baixando...',
     performDownload: 'Fazer Download',
     // UploadArea
@@ -198,7 +197,7 @@ const translations = {
     generating: 'Gerando...',
     clearAll: 'Limpar Tudo',
     // Tips Modal
-    tips: 'Dicas',
+    tipsAndFavorites: 'Dicas e Favoritos',
     promptHelperTitle: 'Assistente de Prompt',
     guide: 'Guia de Prompt',
     builder: 'Construtor de Prompt',
@@ -349,7 +348,7 @@ const translations = {
     resetTooltip: 'Reset and start a new project',
     stop: 'Stop',
     describeAnimation: '🎬 Describe the animation',
-    describeIdea: '💭 Describe your idea',
+    describeIdea: 'Describe your idea',
     promptPlaceholderVideo: 'E.g., a dramatic close-up, the camera slowly pans out...',
     promptPlaceholderImage: 'Describe the image you want to create or the edit you want to make...',
     enhancePrompt: 'Enhance prompt with AI',
@@ -484,7 +483,7 @@ const translations = {
     generating: 'Generating...',
     clearAll: 'Clear All',
     // Tips Modal
-    tips: 'Tips',
+    tipsAndFavorites: 'Tips & Favorites',
     promptHelperTitle: 'Prompt Helper',
     guide: 'Prompt Guide',
     builder: 'Prompt Builder',
@@ -1622,10 +1621,10 @@ const App: React.FC = () => {
       }
   }, [lastDeletedGallery]);
 
-  const handleDeleteFromGallery = useCallback(async (id: string) => {
+  const handleDeleteFromGallery = async (id: string) => {
     await dbService.deleteImage(id);
     setGalleryImages(prevImages => prevImages.filter(image => image.id !== id));
-  }, []);
+  };
 
   const handleToggleFavorite = useCallback(async (id: string) => {
     const image = galleryImages.find(img => img.id === id);
